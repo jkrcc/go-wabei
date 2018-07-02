@@ -1,18 +1,18 @@
-// Copyright 2018 The go-ethereum Authors
-// This file is part of go-ethereum.
+// Copyright 2018 The go-wabei Authors
+// This file is part of go-wabei.
 //
-// go-ethereum is free software: you can redistribute it and/or modify
+// go-wabei is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// go-ethereum is distributed in the hope that it will be useful,
+// go-wabei is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with go-ethereum. If not, see <http://www.gnu.org/licenses/>.
+// along with go-wabei. If not, see <http://www.gnu.org/licenses/>.
 
 // signer is a utility that can be used so sign transactions and
 // arbitrary data.
@@ -35,23 +35,23 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/cmd/utils"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/node"
-	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/ethereum/go-ethereum/signer/core"
-	"github.com/ethereum/go-ethereum/signer/rules"
-	"github.com/ethereum/go-ethereum/signer/storage"
+	"github.com/wabei/go-wabei/cmd/utils"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/crypto"
+	"github.com/wabei/go-wabei/log"
+	"github.com/wabei/go-wabei/node"
+	"github.com/wabei/go-wabei/rpc"
+	"github.com/wabei/go-wabei/signer/core"
+	"github.com/wabei/go-wabei/signer/rules"
+	"github.com/wabei/go-wabei/signer/storage"
 	"gopkg.in/urfave/cli.v1"
 )
 
-// ExternalAPIVersion -- see extapi_changelog.md
-const ExternalAPIVersion = "2.0.0"
+// ExternalApiVersion -- see extapi_changelog.md
+const ExternalApiVersion = "2.0.0"
 
-// InternalAPIVersion -- see intapi_changelog.md
-const InternalAPIVersion = "2.0.0"
+// InternalApiVersion -- see intapi_changelog.md
+const InternalApiVersion = "2.0.0"
 
 const legalWarning = `
 WARNING! 
@@ -170,7 +170,7 @@ remove any stored credential for that address (keyfile)
 
 func init() {
 	app.Name = "Clef"
-	app.Usage = "Manage Ethereum account operations"
+	app.Usage = "Manage Wabei account operations"
 	app.Flags = []cli.Flag{
 		logLevelFlag,
 		keystoreFlag,
@@ -398,10 +398,10 @@ func signer(c *cli.Context) error {
 	}
 	// register signer API with server
 	var (
-		extapiURL = "n/a"
-		ipcapiURL = "n/a"
+		extapiUrl = "n/a"
+		ipcApiUrl = "n/a"
 	)
-	rpcAPI := []rpc.API{
+	rpcApi := []rpc.API{
 		{
 			Namespace: "account",
 			Public:    true,
@@ -415,12 +415,12 @@ func signer(c *cli.Context) error {
 
 		// start http server
 		httpEndpoint := fmt.Sprintf("%s:%d", c.String(utils.RPCListenAddrFlag.Name), c.Int(rpcPortFlag.Name))
-		listener, _, err := rpc.StartHTTPEndpoint(httpEndpoint, rpcAPI, []string{"account"}, cors, vhosts)
+		listener, _, err := rpc.StartHTTPEndpoint(httpEndpoint, rpcApi, []string{"account"}, cors, vhosts)
 		if err != nil {
 			utils.Fatalf("Could not start RPC api: %v", err)
 		}
-		extapiURL = fmt.Sprintf("http://%s", httpEndpoint)
-		log.Info("HTTP endpoint opened", "url", extapiURL)
+		extapiUrl = fmt.Sprintf("http://%s", httpEndpoint)
+		log.Info("HTTP endpoint opened", "url", extapiUrl)
 
 		defer func() {
 			listener.Close()
@@ -430,19 +430,19 @@ func signer(c *cli.Context) error {
 	}
 	if !c.Bool(utils.IPCDisabledFlag.Name) {
 		if c.IsSet(utils.IPCPathFlag.Name) {
-			ipcapiURL = c.String(utils.IPCPathFlag.Name)
+			ipcApiUrl = c.String(utils.IPCPathFlag.Name)
 		} else {
-			ipcapiURL = filepath.Join(configDir, "clef.ipc")
+			ipcApiUrl = filepath.Join(configDir, "clef.ipc")
 		}
 
-		listener, _, err := rpc.StartIPCEndpoint(ipcapiURL, rpcAPI)
+		listener, _, err := rpc.StartIPCEndpoint(ipcApiUrl, rpcApi)
 		if err != nil {
 			utils.Fatalf("Could not start IPC api: %v", err)
 		}
-		log.Info("IPC endpoint opened", "url", ipcapiURL)
+		log.Info("IPC endpoint opened", "url", ipcApiUrl)
 		defer func() {
 			listener.Close()
-			log.Info("IPC endpoint closed", "url", ipcapiURL)
+			log.Info("IPC endpoint closed", "url", ipcApiUrl)
 		}()
 
 	}
@@ -453,10 +453,10 @@ func signer(c *cli.Context) error {
 	}
 	ui.OnSignerStartup(core.StartupInfo{
 		Info: map[string]interface{}{
-			"extapi_version": ExternalAPIVersion,
-			"intapi_version": InternalAPIVersion,
-			"extapi_http":    extapiURL,
-			"extapi_ipc":     ipcapiURL,
+			"extapi_version": ExternalApiVersion,
+			"intapi_version": InternalApiVersion,
+			"extapi_http":    extapiUrl,
+			"extapi_ipc":     ipcApiUrl,
 		},
 	})
 

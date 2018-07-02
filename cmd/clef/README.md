@@ -4,18 +4,13 @@ Clef can be used to sign transactions and data and is meant as a replacement for
 This allows DApps not to depend on geth's account management. When a DApp wants to sign data it can send the data to
 the signer, the signer will then provide the user with context and asks the user for permission to sign the data. If
 the users grants the signing request the signer will send the signature back to the DApp.
-  
-This setup allows a DApp to connect to a remote Ethereum node and send transactions that are locally signed. This can
-help in situations when a DApp is connected to a remote node because a local Ethereum node is not available, not
-synchronised with the chain or a particular Ethereum node that has no built-in (or limited) account management.
-  
+
+This setup allows a DApp to connect to a remote Wabei node and send transactions that are locally signed. This can
+help in situations when a DApp is connected to a remote node because a local Wabei node is not available, not
+synchronised with the chain or a particular Wabei node that has no built-in (or limited) account management.
+
 Clef can run as a daemon on the same machine, or off a usb-stick like [usb armory](https://inversepath.com/usbarmory),
 or a separate VM in a [QubesOS](https://www.qubes-os.org/) type os setup.
-
-Check out 
-
-* the [tutorial](tutorial.md) for some concrete examples on how the signer works.
-* the [setup docs](docs/setup.md) for some information on how to configure it to work on QubesOS or USBArmory. 
 
 
 ## Command line flags
@@ -29,7 +24,7 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --loglevel value        log level to emit to the screen (default: 4)
-   --keystore value        Directory for the keystore (default: "$HOME/.ethereum/keystore")
+   --keystore value        Directory for the keystore (default: "$HOME/.wabei/keystore")
    --configdir value       Directory for clef configuration (default: "$HOME/.clef")
    --networkid value       Network identifier (integer, 1=Frontier, 2=Morden (disused), 3=Ropsten, 4=Rinkeby) (default: 1)
    --lightkdf              Reduce key-derivation RAM & CPU usage at some expense of KDF strength
@@ -51,9 +46,10 @@ GLOBAL OPTIONS:
 
 Example:
 ```
-signer -keystore /my/keystore -chainid 4
+signer -keystore /my/keystore -chainid 12355
 ```
 
+Check out the [tutorial](tutorial.md) for some concrete examples on how the signer works.
 
 ## Security model
 
@@ -170,7 +166,7 @@ All hex encoded values must be prefixed with `0x`.
 
 #### Create new password protected account
 
-The signer will generate a new private key, encrypts it according to [web3 keystore spec](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) and stores it in the keystore directory.
+The signer will generate a new private key, encrypts it according to [web3 keystore spec](https://github.com/wabei/wiki/wiki/Web3-Secret-Storage-Definition) and stores it in the keystore directory.
 The client is responsible for creating a backup of the keystore. If the keystore is lost there is no method of retrieving lost accounts.
 
 #### Arguments
@@ -180,7 +176,7 @@ None
 #### Result
   - address [string]: account address that is derived from the generated key
   - url [string]: location of the keyfile
-  
+
 #### Sample call
 ```json
 {
@@ -212,9 +208,9 @@ None
 #### Result
   - array with account records:
      - account.address [string]: account address that is derived from the generated key
-     - account.type [string]: type of the 
+     - account.type [string]: type of the
      - account.url [string]: location of the account
-  
+
 #### Sample call
 ```json
 {
@@ -261,7 +257,7 @@ None
 
 #### Result
   - signed transaction in RLP encoded form [data]
-  
+
 #### Sample call
 ```json
 {
@@ -358,7 +354,7 @@ Bash example:
 
 #### Result
   - calculated signature [data]
-  
+
 #### Sample call
 ```json
 {
@@ -385,14 +381,14 @@ Response
 
 #### Recover address
    Derive the address from the account that was used to sign data from the data and signature.
-   
+
 #### Arguments
   - data [data]: data that was signed
   - signature [data]: the signature to verify
 
 #### Result
   - derived account [address]
-  
+
 #### Sample call
 ```json
 {
@@ -421,16 +417,16 @@ Response
 #### Import account
    Import a private key into the keystore. The imported key is expected to be encrypted according to the web3 keystore
    format.
-   
+
 #### Arguments
-  - account [object]: key in [web3 keystore format](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) (retrieved with account_export) 
+  - account [object]: key in [web3 keystore format](https://github.com/wabei/wiki/wiki/Web3-Secret-Storage-Definition) (retrieved with account_export)
 
 #### Result
   - imported key [object]:
      - key.address [address]: address of the imported key
      - key.type [string]: type of the account
      - key.url [string]: key URL
-  
+
 #### Sample call
 ```json
 {
@@ -481,14 +477,14 @@ Response
 #### Export account from keystore
    Export a private key from the keystore. The exported private key is encrypted with the original passphrase. When the
    key is imported later this passphrase is required.
-   
+
 #### Arguments
   - account [address]: export private key that is associated with this account
 
 #### Result
-  - exported key, see [web3 keystore format](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) for
+  - exported key, see [web3 keystore format](https://github.com/wabei/wiki/wiki/Web3-Secret-Storage-Definition) for
   more information
-  
+
 #### Sample call
 ```json
 {
@@ -726,12 +722,12 @@ Invoked when a request for account listing has been made.
       "accounts": [
         {
           "type": "Account",
-          "url": "keystore:///home/bazonk/.ethereum/keystore/UTC--2017-11-20T14-44-54.089682944Z--123409812340981234098123409812deadbeef42",
+          "url": "keystore:///home/bazonk/.wabei/keystore/UTC--2017-11-20T14-44-54.089682944Z--123409812340981234098123409812deadbeef42",
           "address": "0x123409812340981234098123409812deadbeef42"
         },
         {
           "type": "Account",
-          "url": "keystore:///home/bazonk/.ethereum/keystore/UTC--2017-11-23T21-59-03.199240693Z--cafebabedeadbeef34098123409812deadbeef42",
+          "url": "keystore:///home/bazonk/.wabei/keystore/UTC--2017-11-23T21-59-03.199240693Z--cafebabedeadbeef34098123409812deadbeef42",
           "address": "0xcafebabedeadbeef34098123409812deadbeef42"
         }
       ],
@@ -760,7 +756,7 @@ Invoked when a request for account listing has been made.
     {
       "address": "0x123409812340981234098123409812deadbeef42",
       "raw_data": "0x01020304",
-      "message": "\u0019Ethereum Signed Message:\n4\u0001\u0002\u0003\u0004",
+      "message": "\u0019Wabei Signed Message:\n4\u0001\u0002\u0003\u0004",
       "hash": "0x7e3a4e7a9d1744bc5c675c25e1234ca8ed9162bd17f78b9085e48047c15ac310",
       "meta": {
         "remote": "signer binary",
@@ -854,7 +850,7 @@ A UI should conform to the following rules.
 * A UI MUST NOT load any external resources that were not embedded/part of the UI package.
   * For example, not load icons, stylesheets from the internet
   * Not load files from the filesystem, unless they reside in the same local directory (e.g. config files)
-* A Graphical UI MUST show the blocky-identicon for ethereum addresses.
+* A Graphical UI MUST show the blocky-identicon for wabei addresses.
 * A UI MUST warn display approproate warning if the destination-account is formatted with invalid checksum.
 * A UI MUST NOT open any ports or services
   * The signer opens the public port
@@ -864,14 +860,3 @@ A UI should conform to the following rules.
   * The signer provides accounts
 * A UI SHOULD, to the best extent possible, use static linking / bundling, so that requried libraries are bundled
 along with the UI.
-
-
-### UI Implementations 
-
-There are a couple of implementation for a UI. We'll try to keep this list up to date. 
-
-| Name | Repo | UI type| No external resources| Blocky support| Verifies permissions | Hash information | No secondary storage | Statically linked| Can modify parameters|
-| ---- | ---- | -------| ---- | ---- | ---- |---- | ---- | ---- | ---- |
-| QtSigner| https://github.com/holiman/qtsigner/| Python3/QT-based| :+1:| :+1:| :+1:| :+1:| :+1:| :x: |  :+1: (partially)|
-| GtkSigner| https://github.com/holiman/gtksigner| Python3/GTK-based| :+1:| :x:| :x:| :+1:| :+1:| :x: |  :x: |
-| Frame | https://github.com/floating/frame/commits/go-signer| Electron-based| :x:| :x:| :x:| :x:| ?| :x: |  :x: |

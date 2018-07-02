@@ -1,18 +1,18 @@
-// Copyright 2016 The go-ethereum Authors
-// This file is part of go-ethereum.
+// Copyright 2016 The go-wabei Authors
+// This file is part of go-wabei.
 //
-// go-ethereum is free software: you can redistribute it and/or modify
+// go-wabei is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// go-ethereum is distributed in the hope that it will be useful,
+// go-wabei is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with go-ethereum. If not, see <http://www.gnu.org/licenses/>.
+// along with go-wabei. If not, see <http://www.gnu.org/licenses/>.
 
 // Command bzzup uploads files to the swarm HTTP API.
 package main
@@ -30,8 +30,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/cmd/utils"
-	swarm "github.com/ethereum/go-ethereum/swarm/api/client"
+	"github.com/wabei/go-wabei/cmd/utils"
+	swarm "github.com/wabei/go-wabei/swarm/api/client"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -40,13 +40,12 @@ func upload(ctx *cli.Context) {
 	args := ctx.Args()
 	var (
 		bzzapi       = strings.TrimRight(ctx.GlobalString(SwarmApiFlag.Name), "/")
-		recursive    = ctx.GlobalBool(SwarmRecursiveFlag.Name)
+		recursive    = ctx.GlobalBool(SwarmRecursiveUploadFlag.Name)
 		wantManifest = ctx.GlobalBoolT(SwarmWantManifestFlag.Name)
 		defaultPath  = ctx.GlobalString(SwarmUploadDefaultPath.Name)
 		fromStdin    = ctx.GlobalBool(SwarmUpFromStdinFlag.Name)
 		mimeType     = ctx.GlobalString(SwarmUploadMimeType.Name)
 		client       = swarm.NewClient(bzzapi)
-		toEncrypt    = ctx.Bool(SwarmEncryptedFlag.Name)
 		file         string
 	)
 
@@ -77,7 +76,7 @@ func upload(ctx *cli.Context) {
 			utils.Fatalf("Error opening file: %s", err)
 		}
 		defer f.Close()
-		hash, err := client.UploadRaw(f, f.Size, toEncrypt)
+		hash, err := client.UploadRaw(f, f.Size)
 		if err != nil {
 			utils.Fatalf("Upload failed: %s", err)
 		}
@@ -98,7 +97,7 @@ func upload(ctx *cli.Context) {
 			if !recursive {
 				return "", errors.New("Argument is a directory and recursive upload is disabled")
 			}
-			return client.UploadDirectory(file, defaultPath, "", toEncrypt)
+			return client.UploadDirectory(file, defaultPath, "")
 		}
 	} else {
 		doUpload = func() (string, error) {
@@ -111,7 +110,7 @@ func upload(ctx *cli.Context) {
 				mimeType = detectMimeType(file)
 			}
 			f.ContentType = mimeType
-			return client.Upload(f, "", toEncrypt)
+			return client.Upload(f, "")
 		}
 	}
 	hash, err := doUpload()

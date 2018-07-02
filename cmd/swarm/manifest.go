@@ -1,18 +1,18 @@
-// Copyright 2017 The go-ethereum Authors
-// This file is part of go-ethereum.
+// Copyright 2017 The go-wabei Authors
+// This file is part of go-wabei.
 //
-// go-ethereum is free software: you can redistribute it and/or modify
+// go-wabei is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// go-ethereum is distributed in the hope that it will be useful,
+// go-wabei is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with go-ethereum. If not, see <http://www.gnu.org/licenses/>.
+// along with go-wabei. If not, see <http://www.gnu.org/licenses/>.
 
 // Command  MANIFEST update
 package main
@@ -24,9 +24,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/cmd/utils"
-	"github.com/ethereum/go-ethereum/swarm/api"
-	swarm "github.com/ethereum/go-ethereum/swarm/api/client"
+	"github.com/wabei/go-wabei/cmd/utils"
+	"github.com/wabei/go-wabei/swarm/api"
+	swarm "github.com/wabei/go-wabei/swarm/api/client"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -131,13 +131,13 @@ func addEntryToManifest(ctx *cli.Context, mhash, path, hash, ctype string) strin
 		longestPathEntry = api.ManifestEntry{}
 	)
 
-	mroot, isEncrypted, err := client.DownloadManifest(mhash)
+	mroot, err := client.DownloadManifest(mhash)
 	if err != nil {
 		utils.Fatalf("Manifest download failed: %v", err)
 	}
 
 	//TODO: check if the "hash" to add is valid and present in swarm
-	_, _, err = client.DownloadManifest(hash)
+	_, err = client.DownloadManifest(hash)
 	if err != nil {
 		utils.Fatalf("Hash to add is not present: %v", err)
 	}
@@ -180,7 +180,7 @@ func addEntryToManifest(ctx *cli.Context, mhash, path, hash, ctype string) strin
 		mroot.Entries = append(mroot.Entries, newEntry)
 	}
 
-	newManifestHash, err := client.UploadManifest(mroot, isEncrypted)
+	newManifestHash, err := client.UploadManifest(mroot)
 	if err != nil {
 		utils.Fatalf("Manifest upload failed: %v", err)
 	}
@@ -197,7 +197,7 @@ func updateEntryInManifest(ctx *cli.Context, mhash, path, hash, ctype string) st
 		longestPathEntry = api.ManifestEntry{}
 	)
 
-	mroot, isEncrypted, err := client.DownloadManifest(mhash)
+	mroot, err := client.DownloadManifest(mhash)
 	if err != nil {
 		utils.Fatalf("Manifest download failed: %v", err)
 	}
@@ -257,7 +257,7 @@ func updateEntryInManifest(ctx *cli.Context, mhash, path, hash, ctype string) st
 		mroot = newMRoot
 	}
 
-	newManifestHash, err := client.UploadManifest(mroot, isEncrypted)
+	newManifestHash, err := client.UploadManifest(mroot)
 	if err != nil {
 		utils.Fatalf("Manifest upload failed: %v", err)
 	}
@@ -273,7 +273,7 @@ func removeEntryFromManifest(ctx *cli.Context, mhash, path string) string {
 		longestPathEntry = api.ManifestEntry{}
 	)
 
-	mroot, isEncrypted, err := client.DownloadManifest(mhash)
+	mroot, err := client.DownloadManifest(mhash)
 	if err != nil {
 		utils.Fatalf("Manifest download failed: %v", err)
 	}
@@ -323,7 +323,7 @@ func removeEntryFromManifest(ctx *cli.Context, mhash, path string) string {
 		mroot = newMRoot
 	}
 
-	newManifestHash, err := client.UploadManifest(mroot, isEncrypted)
+	newManifestHash, err := client.UploadManifest(mroot)
 	if err != nil {
 		utils.Fatalf("Manifest upload failed: %v", err)
 	}

@@ -1,18 +1,18 @@
-// Copyright 2017 The go-ethereum Authors
-// This file is part of go-ethereum.
+// Copyright 2017 The go-wabei Authors
+// This file is part of go-wabei.
 //
-// go-ethereum is free software: you can redistribute it and/or modify
+// go-wabei is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// go-ethereum is distributed in the hope that it will be useful,
+// go-wabei is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with go-ethereum. If not, see <http://www.gnu.org/licenses/>.
+// along with go-wabei. If not, see <http://www.gnu.org/licenses/>.
 
 // This is a simple Whisper node. It could be used as a stand-alone bootstrap node.
 // Also, could be used for different test and diagnostics purposes.
@@ -35,16 +35,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ethereum/go-ethereum/cmd/utils"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/console"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/p2p"
-	"github.com/ethereum/go-ethereum/p2p/discover"
-	"github.com/ethereum/go-ethereum/p2p/nat"
-	"github.com/ethereum/go-ethereum/whisper/mailserver"
-	whisper "github.com/ethereum/go-ethereum/whisper/whisperv6"
+	"github.com/wabei/go-wabei/cmd/utils"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/console"
+	"github.com/wabei/go-wabei/crypto"
+	"github.com/wabei/go-wabei/log"
+	"github.com/wabei/go-wabei/p2p"
+	"github.com/wabei/go-wabei/p2p/discover"
+	"github.com/wabei/go-wabei/p2p/nat"
+	"github.com/wabei/go-wabei/whisper/mailserver"
+	whisper "github.com/wabei/go-wabei/whisper/whisperv6"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -97,7 +97,7 @@ var (
 	argPoW       = flag.Float64("pow", whisper.DefaultMinimumPoW, "PoW for normal messages in float format (e.g. 2.7)")
 	argServerPoW = flag.Float64("mspow", whisper.DefaultMinimumPoW, "PoW requirement for Mail Server request")
 
-	argIP      = flag.String("ip", "", "IP address and port of this node (e.g. 127.0.0.1:30303)")
+	argIP      = flag.String("ip", "", "IP address and port of this node (e.g. 127.0.0.1:17899)")
 	argPub     = flag.String("pub", "", "public key for asymmetric encryption")
 	argDBPath  = flag.String("dbpath", "", "path to the server's DB directory")
 	argIDFile  = flag.String("idfile", "", "file name with node id (private key)")
@@ -140,8 +140,8 @@ func processArgs() {
 	}
 
 	if *asymmetricMode && len(*argPub) > 0 {
-		var err error
-		if pub, err = crypto.UnmarshalPubkey(common.FromHex(*argPub)); err != nil {
+		pub = crypto.ToECDSAPub(common.FromHex(*argPub))
+		if !isKeyValid(pub) {
 			utils.Fatalf("invalid public key")
 		}
 	}
@@ -271,9 +271,7 @@ func initialize() {
 
 	if *mailServerMode {
 		shh.RegisterServer(&mailServer)
-		if err := mailServer.Init(shh, *argDBPath, msPassword, *argServerPoW); err != nil {
-			utils.Fatalf("Failed to init MailServer: %s", err)
-		}
+		mailServer.Init(shh, *argDBPath, msPassword, *argServerPoW)
 	}
 
 	server = &p2p.Server{
@@ -321,6 +319,10 @@ func startServer() error {
 	return nil
 }
 
+func isKeyValid(k *ecdsa.PublicKey) bool {
+	return k.X != nil && k.Y != nil
+}
+
 func configureNode() {
 	var err error
 	var p2pAccept bool
@@ -336,8 +338,9 @@ func configureNode() {
 			if b == nil {
 				utils.Fatalf("Error: can not convert hexadecimal string")
 			}
-			if pub, err = crypto.UnmarshalPubkey(b); err != nil {
-				utils.Fatalf("Error: invalid peer public key")
+			pub = crypto.ToECDSAPub(b)
+			if !isKeyValid(pub) {
+				utils.Fatalf("Error: invalid public key")
 			}
 		}
 	}

@@ -1,10 +1,10 @@
-# Rules
+wabei# Rules
 
 The `signer` binary contains a ruleset engine, implemented with [OttoVM](https://github.com/robertkrimen/otto)
 
 It enables usecases like the following:
 
-* I want to auto-approve transactions with contract `CasinoDapp`, with up to `0.05 ether` in value to maximum `1 ether` per 24h period
+* I want to auto-approve transactions with contract `CasinoDapp`, with up to `0.05 wabei` in value to maximum `1 wabei` per 24h period
 * I want to auto-approve transaction to contract `EthAlarmClock` with `data`=`0xdeadbeef`, if `value=0`, `gas < 44k` and `gasPrice < 40Gwei`
 
 The two main features that are required for this to work well are;
@@ -150,7 +150,7 @@ This is now implemented (with ephemeral non-encrypted storage for now, so not ye
 	// Time window: 1 week
 	var window = 1000* 3600*24*7;
 
-	// Limit : 1 ether
+	// Limit : 1 wabei
 	var limit = new BigNumber("1e18");
 
 	function isLimitOk(transaction){
