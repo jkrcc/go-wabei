@@ -1,18 +1,18 @@
-// Copyright 2016 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2016 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package ens
 
@@ -23,15 +23,15 @@ package ens
 import (
 	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/contracts/ens/contract"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/wabei/go-wabei/accounts/abi/bind"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/contracts/ens/contract"
+	"github.com/wabei/go-wabei/core/types"
+	"github.com/wabei/go-wabei/crypto"
 )
 
 var (
-	MainNetAddress = common.HexToAddress("0x314159265dD8dbb310642f98f50C066173C1259b")
+	MainNetAddress = common.HexToAddress("0x2bcec565226ba2d422ea05ae2ab899ca59c1e73d")
 	TestNetAddress = common.HexToAddress("0x112234455c3a32fd11230c42e7bccd4a84e02010")
 )
 
@@ -42,7 +42,7 @@ type ENS struct {
 }
 
 // NewENS creates a struct exposing convenient high-level operations for interacting with
-// the Ethereum Name Service.
+// the Wabei Name Service.
 func NewENS(transactOpts *bind.TransactOpts, contractAddr common.Address, contractBackend bind.ContractBackend) (*ENS, error) {
 	ens, err := contract.NewENS(contractAddr, contractBackend)
 	if err != nil {
@@ -95,7 +95,7 @@ func ensParentNode(name string) (common.Hash, common.Hash) {
 	}
 }
 
-func EnsNode(name string) common.Hash {
+func ensNode(name string) common.Hash {
 	parentNode, parentLabel := ensParentNode(name)
 	return crypto.Keccak256Hash(parentNode[:], parentLabel[:])
 }
@@ -136,7 +136,7 @@ func (self *ENS) getRegistrar(node [32]byte) (*contract.FIFSRegistrarSession, er
 
 // Resolve is a non-transactional call that returns the content hash associated with a name.
 func (self *ENS) Resolve(name string) (common.Hash, error) {
-	node := EnsNode(name)
+	node := ensNode(name)
 
 	resolver, err := self.getResolver(node)
 	if err != nil {
@@ -165,7 +165,7 @@ func (self *ENS) Register(name string) (*types.Transaction, error) {
 // SetContentHash sets the content hash associated with a name. Only works if the caller
 // owns the name, and the associated resolver implements a `setContent` function.
 func (self *ENS) SetContentHash(name string, hash common.Hash) (*types.Transaction, error) {
-	node := EnsNode(name)
+	node := ensNode(name)
 
 	resolver, err := self.getResolver(node)
 	if err != nil {

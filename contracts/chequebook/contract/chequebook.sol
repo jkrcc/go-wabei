@@ -2,8 +2,8 @@ pragma solidity ^0.4.18;
 
 import "./mortal.sol";
 
-/// @title Chequebook for Ethereum micropayments
-/// @author Daniel A. Nagy <daniel@ethereum.org>
+/// @title Chequebook for Wabei micropayments
+/// @author Daniel A. Nagy <daniel@wabei.org>
 contract chequebook is mortal {
     // Cumulative paid amount in wei to each beneficiary
     mapping (address => uint256) public sent;
@@ -11,7 +11,7 @@ contract chequebook is mortal {
     /// @notice Overdraft event
     event Overdraft(address deadbeat);
 
-    // Allow sending ether to the chequebook.
+    // Allow sending wabei to the chequebook.
     function() public payable { }
 
     /// @notice Cash cheque
