@@ -1,18 +1,18 @@
-// Copyright 2017 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2017 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package vm
 
@@ -20,8 +20,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/params"
 )
 
 type twoOperandTest struct {
@@ -100,7 +100,7 @@ func TestByteOp(t *testing.T) {
 }
 
 func TestSHL(t *testing.T) {
-	// Testcases from https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md#shl-shift-left
+	// Testcases from https://github.com/wabei/EIPs/blob/master/EIPS/eip-145.md#shl-shift-left
 	tests := []twoOperandTest{
 		{"0000000000000000000000000000000000000000000000000000000000000001", "00", "0000000000000000000000000000000000000000000000000000000000000001"},
 		{"0000000000000000000000000000000000000000000000000000000000000001", "01", "0000000000000000000000000000000000000000000000000000000000000002"},
@@ -118,7 +118,7 @@ func TestSHL(t *testing.T) {
 }
 
 func TestSHR(t *testing.T) {
-	// Testcases from https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md#shr-logical-shift-right
+	// Testcases from https://github.com/wabei/EIPs/blob/master/EIPS/eip-145.md#shr-logical-shift-right
 	tests := []twoOperandTest{
 		{"0000000000000000000000000000000000000000000000000000000000000001", "00", "0000000000000000000000000000000000000000000000000000000000000001"},
 		{"0000000000000000000000000000000000000000000000000000000000000001", "01", "0000000000000000000000000000000000000000000000000000000000000000"},
@@ -136,7 +136,7 @@ func TestSHR(t *testing.T) {
 }
 
 func TestSAR(t *testing.T) {
-	// Testcases from https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md#sar-arithmetic-shift-right
+	// Testcases from https://github.com/wabei/EIPs/blob/master/EIPS/eip-145.md#sar-arithmetic-shift-right
 	tests := []twoOperandTest{
 		{"0000000000000000000000000000000000000000000000000000000000000001", "00", "0000000000000000000000000000000000000000000000000000000000000001"},
 		{"0000000000000000000000000000000000000000000000000000000000000001", "01", "0000000000000000000000000000000000000000000000000000000000000000"},
@@ -424,43 +424,4 @@ func BenchmarkOpSAR(b *testing.B) {
 func BenchmarkOpIsZero(b *testing.B) {
 	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
 	opBenchmark(b, opIszero, x)
-}
-
-func TestOpMstore(t *testing.T) {
-	var (
-		env   = NewEVM(Context{}, nil, params.TestChainConfig, Config{})
-		stack = newstack()
-		mem   = NewMemory()
-	)
-	mem.Resize(64)
-	pc := uint64(0)
-	v := "abcdef00000000000000abba000000000deaf000000c0de00100000000133700"
-	stack.pushN(new(big.Int).SetBytes(common.Hex2Bytes(v)), big.NewInt(0))
-	opMstore(&pc, env, nil, mem, stack)
-	if got := common.Bytes2Hex(mem.Get(0, 32)); got != v {
-		t.Fatalf("Mstore fail, got %v, expected %v", got, v)
-	}
-	stack.pushN(big.NewInt(0x1), big.NewInt(0))
-	opMstore(&pc, env, nil, mem, stack)
-	if common.Bytes2Hex(mem.Get(0, 32)) != "0000000000000000000000000000000000000000000000000000000000000001" {
-		t.Fatalf("Mstore failed to overwrite previous value")
-	}
-}
-
-func BenchmarkOpMstore(bench *testing.B) {
-	var (
-		env   = NewEVM(Context{}, nil, params.TestChainConfig, Config{})
-		stack = newstack()
-		mem   = NewMemory()
-	)
-	mem.Resize(64)
-	pc := uint64(0)
-	memStart := big.NewInt(0)
-	value := big.NewInt(0x1337)
-
-	bench.ResetTimer()
-	for i := 0; i < bench.N; i++ {
-		stack.pushN(value, memStart)
-		opMstore(&pc, env, nil, mem, stack)
-	}
 }

@@ -1,18 +1,18 @@
-// Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2015 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package runtime
 
@@ -21,12 +21,12 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/core/state"
+	"github.com/wabei/go-wabei/core/vm"
+	"github.com/wabei/go-wabei/crypto"
+	"github.com/wabei/go-wabei/ethdb"
+	"github.com/wabei/go-wabei/params"
 )
 
 // Config is a basic type specifying certain configuration flags for running
@@ -52,7 +52,7 @@ type Config struct {
 func setDefaults(cfg *Config) {
 	if cfg.ChainConfig == nil {
 		cfg.ChainConfig = &params.ChainConfig{
-			ChainID:        big.NewInt(1),
+			ChainId:        big.NewInt(12355),
 			HomesteadBlock: new(big.Int),
 			DAOForkBlock:   new(big.Int),
 			DAOForkSupport: false,
@@ -99,7 +99,8 @@ func Execute(code, input []byte, cfg *Config) ([]byte, *state.StateDB, error) {
 	setDefaults(cfg)
 
 	if cfg.State == nil {
-		cfg.State, _ = state.New(common.Hash{}, state.NewDatabase(ethdb.NewMemDatabase()))
+		db, _ := ethdb.NewMemDatabase()
+		cfg.State, _ = state.New(common.Hash{}, state.NewDatabase(db))
 	}
 	var (
 		address = common.BytesToAddress([]byte("contract"))
@@ -129,7 +130,8 @@ func Create(input []byte, cfg *Config) ([]byte, common.Address, uint64, error) {
 	setDefaults(cfg)
 
 	if cfg.State == nil {
-		cfg.State, _ = state.New(common.Hash{}, state.NewDatabase(ethdb.NewMemDatabase()))
+		db, _ := ethdb.NewMemDatabase()
+		cfg.State, _ = state.New(common.Hash{}, state.NewDatabase(db))
 	}
 	var (
 		vmenv  = NewEnv(cfg)

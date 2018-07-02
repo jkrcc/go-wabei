@@ -1,18 +1,18 @@
-// Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2015 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package core
 
@@ -23,15 +23,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/consensus/ethash"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/common/math"
+	"github.com/wabei/go-wabei/consensus/ethash"
+	"github.com/wabei/go-wabei/core/types"
+	"github.com/wabei/go-wabei/core/vm"
+	"github.com/wabei/go-wabei/crypto"
+	"github.com/wabei/go-wabei/ethdb"
+	"github.com/wabei/go-wabei/params"
 )
 
 func BenchmarkInsertChain_empty_memdb(b *testing.B) {
@@ -105,7 +104,7 @@ func init() {
 	}
 }
 
-// genTxRing returns a block generator that sends ether in a ring
+// genTxRing returns a block generator that sends wabei in a ring
 // among n accounts. This is creates n entries in the state database
 // and fills the blocks with many small transactions.
 func genTxRing(naccounts int) func(int, *BlockGen) {
@@ -149,7 +148,7 @@ func benchInsertChain(b *testing.B, disk bool, gen func(int, *BlockGen)) {
 	// Create the database in memory or in a temporary directory.
 	var db ethdb.Database
 	if !disk {
-		db = ethdb.NewMemDatabase()
+		db, _ = ethdb.NewMemDatabase()
 	} else {
 		dir, err := ioutil.TempDir("", "eth-core-bench")
 		if err != nil {
@@ -235,15 +234,13 @@ func makeChainForBench(db ethdb.Database, full bool, count uint64) {
 			ReceiptHash: types.EmptyRootHash,
 		}
 		hash = header.Hash()
-
-		rawdb.WriteHeader(db, header)
-		rawdb.WriteCanonicalHash(db, hash, n)
-		rawdb.WriteTd(db, hash, n, big.NewInt(int64(n+1)))
-
+		WriteHeader(db, header)
+		WriteCanonicalHash(db, hash, n)
+		WriteTd(db, hash, n, big.NewInt(int64(n+1)))
 		if full || n == 0 {
 			block := types.NewBlockWithHeader(header)
-			rawdb.WriteBody(db, hash, n, block.Body())
-			rawdb.WriteReceipts(db, hash, n, nil)
+			WriteBody(db, hash, n, block.Body())
+			WriteBlockReceipts(db, hash, n, nil)
 		}
 	}
 }
@@ -295,10 +292,11 @@ func benchReadChain(b *testing.B, full bool, count uint64) {
 			header := chain.GetHeaderByNumber(n)
 			if full {
 				hash := header.Hash()
-				rawdb.ReadBody(db, hash, n)
-				rawdb.ReadReceipts(db, hash, n)
+				GetBody(db, hash, n)
+				GetBlockReceipts(db, hash, n)
 			}
 		}
+
 		chain.Stop()
 		db.Close()
 	}

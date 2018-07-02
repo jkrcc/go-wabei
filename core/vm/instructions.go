@@ -1,18 +1,18 @@
-// Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2015 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package vm
 
@@ -21,11 +21,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/common/math"
+	"github.com/wabei/go-wabei/core/types"
+	"github.com/wabei/go-wabei/crypto"
+	"github.com/wabei/go-wabei/params"
 )
 
 var (
@@ -556,7 +556,7 @@ func opMload(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *St
 func opMstore(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// pop value of the stack
 	mStart, val := stack.pop(), stack.pop()
-	memory.Set32(mStart.Uint64(), val)
+	memory.Set(mStart.Uint64(), 32, math.PaddedBigBytes(val, 32))
 
 	evm.interpreter.intPool.put(mStart, val)
 	return nil, nil
@@ -570,9 +570,9 @@ func opMstore8(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *
 }
 
 func opSload(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	loc := stack.peek()
-	val := evm.StateDB.GetState(contract.Address(), common.BigToHash(loc))
-	loc.SetBytes(val.Bytes())
+	loc := common.BigToHash(stack.pop())
+	val := evm.StateDB.GetState(contract.Address(), loc).Big()
+	stack.push(val)
 	return nil, nil
 }
 
@@ -850,7 +850,7 @@ func makePush(size uint64, pushByteSize int) executionFunc {
 	}
 }
 
-// make dup instruction function
+// make push instruction function
 func makeDup(size int64) executionFunc {
 	return func(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 		stack.dup(evm.interpreter.intPool, int(size))
@@ -861,7 +861,7 @@ func makeDup(size int64) executionFunc {
 // make swap instruction function
 func makeSwap(size int64) executionFunc {
 	// switch n + 1 otherwise n would be swapped with n
-	size++
+	size += 1
 	return func(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 		stack.swap(int(size))
 		return nil, nil

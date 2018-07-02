@@ -1,18 +1,18 @@
-// Copyright 2014 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2014 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package types
 
@@ -22,9 +22,9 @@ import (
 	"io"
 	"unsafe"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/common/hexutil"
+	"github.com/wabei/go-wabei/rlp"
 )
 
 //go:generate gencodec -type Receipt -field-override receiptMarshaling -out gen_receipt_json.go
@@ -36,17 +36,17 @@ var (
 
 const (
 	// ReceiptStatusFailed is the status code of a transaction if execution failed.
-	ReceiptStatusFailed = uint64(0)
+	ReceiptStatusFailed = uint(0)
 
 	// ReceiptStatusSuccessful is the status code of a transaction if execution succeeded.
-	ReceiptStatusSuccessful = uint64(1)
+	ReceiptStatusSuccessful = uint(1)
 )
 
 // Receipt represents the results of a transaction.
 type Receipt struct {
 	// Consensus fields
 	PostState         []byte `json:"root"`
-	Status            uint64 `json:"status"`
+	Status            uint   `json:"status"`
 	CumulativeGasUsed uint64 `json:"cumulativeGasUsed" gencodec:"required"`
 	Bloom             Bloom  `json:"logsBloom"         gencodec:"required"`
 	Logs              []*Log `json:"logs"              gencodec:"required"`
@@ -59,7 +59,7 @@ type Receipt struct {
 
 type receiptMarshaling struct {
 	PostState         hexutil.Bytes
-	Status            hexutil.Uint64
+	Status            hexutil.Uint
 	CumulativeGasUsed hexutil.Uint64
 	GasUsed           hexutil.Uint64
 }

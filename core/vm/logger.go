@@ -1,18 +1,18 @@
-// Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2015 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package vm
 
@@ -23,19 +23,17 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/common/hexutil"
+	"github.com/wabei/go-wabei/common/math"
+	"github.com/wabei/go-wabei/core/types"
 )
 
-// Storage represents a contract's storage.
 type Storage map[common.Hash]common.Hash
 
-// Copy duplicates the current storage.
-func (s Storage) Copy() Storage {
+func (self Storage) Copy() Storage {
 	cpy := make(Storage)
-	for key, value := range s {
+	for key, value := range self {
 		cpy[key] = value
 	}
 
@@ -78,12 +76,10 @@ type structLogMarshaling struct {
 	ErrorString string `json:"error"`  // adds call to ErrorString() in MarshalJSON
 }
 
-// OpName formats the operand name in a human-readable format.
 func (s *StructLog) OpName() string {
 	return s.Op.String()
 }
 
-// ErrorString formats the log's error as a string.
 func (s *StructLog) ErrorString() string {
 	if s.Err != nil {
 		return s.Err.Error()
@@ -128,7 +124,6 @@ func NewStructLogger(cfg *LogConfig) *StructLogger {
 	return logger
 }
 
-// CaptureStart implements the Tracer interface to initialize the tracing operation.
 func (l *StructLogger) CaptureStart(from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int) error {
 	return nil
 }
@@ -183,13 +178,10 @@ func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost ui
 	return nil
 }
 
-// CaptureFault implements the Tracer interface to trace an execution fault
-// while running an opcode.
 func (l *StructLogger) CaptureFault(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error {
 	return nil
 }
 
-// CaptureEnd is called after the call finishes to finalize the tracing.
 func (l *StructLogger) CaptureEnd(output []byte, gasUsed uint64, t time.Duration, err error) error {
 	l.output = output
 	l.err = err

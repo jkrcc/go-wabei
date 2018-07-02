@@ -1,25 +1,25 @@
-// Copyright 2017 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2017 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package vm
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/common/math"
+	"github.com/wabei/go-wabei/params"
 )
 
 // memoryGasCosts calculates the quadratic gas for memory expansion. It does so
@@ -124,12 +124,12 @@ func gasSStore(gt params.GasTable, evm *EVM, contract *Contract, stack *Stack, m
 	// 1. From a zero-value address to a non-zero value         (NEW VALUE)
 	// 2. From a non-zero value address to a zero-value address (DELETE)
 	// 3. From a non-zero to a non-zero                         (CHANGE)
-	if val == (common.Hash{}) && y.Sign() != 0 {
+	if common.EmptyHash(val) && !common.EmptyHash(common.BigToHash(y)) {
 		// 0 => non 0
 		return params.SstoreSetGas, nil
-	} else if val != (common.Hash{}) && y.Sign() == 0 {
-		// non 0 => 0
+	} else if !common.EmptyHash(val) && common.EmptyHash(common.BigToHash(y)) {
 		evm.StateDB.AddRefund(params.SstoreRefundGas)
+
 		return params.SstoreClearGas, nil
 	} else {
 		// non 0 => non 0 (or 0 => 0)

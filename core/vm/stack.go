@@ -1,18 +1,18 @@
-// Copyright 2014 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2014 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package vm
 
@@ -21,7 +21,7 @@ import (
 	"math/big"
 )
 
-// Stack is an object for basic stack operations. Items popped to the stack are
+// stack is an object for basic stack operations. Items popped to the stack are
 // expected to be changed and modified. stack does not take care of adding newly
 // initialised objects.
 type Stack struct {
@@ -32,7 +32,6 @@ func newstack() *Stack {
 	return &Stack{data: make([]*big.Int, 0, 1024)}
 }
 
-// Data returns the underlying big.Int array.
 func (st *Stack) Data() []*big.Int {
 	return st.data
 }
@@ -81,7 +80,6 @@ func (st *Stack) require(n int) error {
 	return nil
 }
 
-// Print dumps the content of the stack
 func (st *Stack) Print() {
 	fmt.Println("### stack ###")
 	if len(st.data) > 0 {

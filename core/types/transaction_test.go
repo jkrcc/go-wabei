@@ -1,18 +1,18 @@
-// Copyright 2014 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2014 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package types
 
@@ -23,13 +23,13 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/crypto"
+	"github.com/wabei/go-wabei/rlp"
 )
 
 // The values in those tests are from the Transaction Tests
-// at github.com/ethereum/tests.
+// at github.com/wabei/tests.
 var (
 	emptyTx = NewTransaction(
 		0,
@@ -165,13 +165,28 @@ func TestTransactionPriceNonceSort(t *testing.T) {
 				t.Errorf("invalid nonce ordering: tx #%d (A=%x N=%v) < tx #%d (A=%x N=%v)", i, fromi[:4], txi.Nonce(), i+j, fromj[:4], txj.Nonce())
 			}
 		}
-
-		// If the next tx has different from account, the price must be lower than the current one
-		if i+1 < len(txs) {
-			next := txs[i+1]
-			fromNext, _ := Sender(signer, next)
-			if fromi != fromNext && txi.GasPrice().Cmp(next.GasPrice()) < 0 {
-				t.Errorf("invalid gasprice ordering: tx #%d (A=%x P=%v) < tx #%d (A=%x P=%v)", i, fromi[:4], txi.GasPrice(), i+1, fromNext[:4], next.GasPrice())
+		// Find the previous and next nonce of this account
+		prev, next := i-1, i+1
+		for j := i - 1; j >= 0; j-- {
+			if fromj, _ := Sender(signer, txs[j]); fromi == fromj {
+				prev = j
+				break
+			}
+		}
+		for j := i + 1; j < len(txs); j++ {
+			if fromj, _ := Sender(signer, txs[j]); fromi == fromj {
+				next = j
+				break
+			}
+		}
+		// Make sure that in between the neighbor nonces, the transaction is correctly positioned price wise
+		for j := prev + 1; j < next; j++ {
+			fromj, _ := Sender(signer, txs[j])
+			if j < i && txs[j].GasPrice().Cmp(txi.GasPrice()) < 0 {
+				t.Errorf("invalid gasprice ordering: tx #%d (A=%x P=%v) < tx #%d (A=%x P=%v)", j, fromj[:4], txs[j].GasPrice(), i, fromi[:4], txi.GasPrice())
+			}
+			if j > i && txs[j].GasPrice().Cmp(txi.GasPrice()) > 0 {
+				t.Errorf("invalid gasprice ordering: tx #%d (A=%x P=%v) > tx #%d (A=%x P=%v)", j, fromj[:4], txs[j].GasPrice(), i, fromi[:4], txi.GasPrice())
 			}
 		}
 	}

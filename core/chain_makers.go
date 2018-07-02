@@ -1,18 +1,18 @@
-// Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2015 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package core
 
@@ -20,14 +20,20 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/consensus/misc"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/wabei/go-wabei/common"
+	"github.com/wabei/go-wabei/consensus"
+	"github.com/wabei/go-wabei/consensus/misc"
+	"github.com/wabei/go-wabei/core/state"
+	"github.com/wabei/go-wabei/core/types"
+	"github.com/wabei/go-wabei/core/vm"
+	"github.com/wabei/go-wabei/ethdb"
+	"github.com/wabei/go-wabei/params"
+)
+
+// So we can deterministically seed different blockchains
+var (
+	canonicalSeed = 1
+	forkSeed      = 2
 )
 
 // BlockGen creates blocks for testing.
@@ -244,6 +250,32 @@ func makeHeader(chain consensus.ChainReader, parent *types.Block, state *state.S
 		Number:   new(big.Int).Add(parent.Number(), common.Big1),
 		Time:     time,
 	}
+}
+
+// newCanonical creates a chain database, and injects a deterministic canonical
+// chain. Depending on the full flag, if creates either a full block chain or a
+// header only chain.
+func newCanonical(engine consensus.Engine, n int, full bool) (ethdb.Database, *BlockChain, error) {
+	// Initialize a fresh chain with only a genesis block
+	gspec := new(Genesis)
+	db, _ := ethdb.NewMemDatabase()
+	genesis := gspec.MustCommit(db)
+
+	blockchain, _ := NewBlockChain(db, nil, params.AllEthashProtocolChanges, engine, vm.Config{})
+	// Create and inject the requested chain
+	if n == 0 {
+		return db, blockchain, nil
+	}
+	if full {
+		// Full block-chain requested
+		blocks := makeBlockChain(genesis, n, engine, db, canonicalSeed)
+		_, err := blockchain.InsertChain(blocks)
+		return db, blockchain, err
+	}
+	// Header-only chain requested
+	headers := makeHeaderChain(genesis.Header(), n, engine, db, canonicalSeed)
+	_, err := blockchain.InsertHeaderChain(headers, 1)
+	return db, blockchain, err
 }
 
 // makeHeaderChain creates a deterministic chain of headers rooted at parent.

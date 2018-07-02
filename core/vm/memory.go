@@ -1,65 +1,46 @@
-// Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2015 The go-wabei Authors
+// This file is part of the go-wabei library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-wabei library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-wabei library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-wabei library. If not, see <http://www.gnu.org/licenses/>.
 
 package vm
 
-import (
-	"fmt"
-	"math/big"
+import "fmt"
 
-	"github.com/ethereum/go-ethereum/common/math"
-)
-
-// Memory implements a simple memory model for the ethereum virtual machine.
+// Memory implements a simple memory model for the wabei virtual machine.
 type Memory struct {
 	store       []byte
 	lastGasCost uint64
 }
 
-// NewMemory returns a new memory memory model.
 func NewMemory() *Memory {
 	return &Memory{}
 }
 
 // Set sets offset + size to value
 func (m *Memory) Set(offset, size uint64, value []byte) {
+	// length of store may never be less than offset + size.
+	// The store should be resized PRIOR to setting the memory
+	if size > uint64(len(m.store)) {
+		panic("INVALID memory: store empty")
+	}
+
 	// It's possible the offset is greater than 0 and size equals 0. This is because
 	// the calcMemSize (common.go) could potentially return 0 when size is zero (NO-OP)
 	if size > 0 {
-		// length of store may never be less than offset + size.
-		// The store should be resized PRIOR to setting the memory
-		if offset+size > uint64(len(m.store)) {
-			panic("invalid memory: store empty")
-		}
 		copy(m.store[offset:offset+size], value)
 	}
-}
-
-// Set32 sets the 32 bytes starting at offset to the value of val, left-padded with zeroes to
-// 32 bytes.
-func (m *Memory) Set32(offset uint64, val *big.Int) {
-	// length of store may never be less than offset + size.
-	// The store should be resized PRIOR to setting the memory
-	if offset+32 > uint64(len(m.store)) {
-		panic("invalid memory: store empty")
-	}
-	// Zero the memory area
-	copy(m.store[offset:offset+32], []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
-	// Fill in relevant bits
-	math.ReadBits(val, m.store[offset:offset+32])
 }
 
 // Resize resizes the memory to size
@@ -70,14 +51,14 @@ func (m *Memory) Resize(size uint64) {
 }
 
 // Get returns offset + size as a new slice
-func (m *Memory) Get(offset, size int64) (cpy []byte) {
+func (self *Memory) Get(offset, size int64) (cpy []byte) {
 	if size == 0 {
 		return nil
 	}
 
-	if len(m.store) > int(offset) {
+	if len(self.store) > int(offset) {
 		cpy = make([]byte, size)
-		copy(cpy, m.store[offset:offset+size])
+		copy(cpy, self.store[offset:offset+size])
 
 		return
 	}
@@ -86,13 +67,13 @@ func (m *Memory) Get(offset, size int64) (cpy []byte) {
 }
 
 // GetPtr returns the offset + size
-func (m *Memory) GetPtr(offset, size int64) []byte {
+func (self *Memory) GetPtr(offset, size int64) []byte {
 	if size == 0 {
 		return nil
 	}
 
-	if len(m.store) > int(offset) {
-		return m.store[offset : offset+size]
+	if len(self.store) > int(offset) {
+		return self.store[offset : offset+size]
 	}
 
 	return nil
@@ -108,7 +89,6 @@ func (m *Memory) Data() []byte {
 	return m.store
 }
 
-// Print dumps the content of the memory.
 func (m *Memory) Print() {
 	fmt.Printf("### mem %d bytes ###\n", len(m.store))
 	if len(m.store) > 0 {
